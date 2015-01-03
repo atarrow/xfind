@@ -19,7 +19,7 @@ var (
 	isDotFile    Predicate = func(v os.FileInfo) bool { return strings.HasPrefix(v.Name(), ".") }
 	isNotDotFile Predicate = func(v os.FileInfo) bool { return !isDotFile(v) }
 	isDir        Predicate = func(v os.FileInfo) bool { return v.IsDir() }
-	isNotDir     Predicate = func(v os.FileInfo) bool { return !v.IsDir() }
+	isFile       Predicate = func(v os.FileInfo) bool { return !v.IsDir() }
 )
 
 // PredicateWithPattern creates a new predicate that represents
@@ -29,7 +29,7 @@ func PredicateWithPattern(pattern string) (Predicate, error) {
 	if err != nil {
 		return nil, err
 	}
-	pred := func(v os.FileInfo) bool { return re.MatchString(v.Name()) }
+	pred := func(v os.FileInfo) bool { return re.MatchString(NFDString(v.Name())) }
 	return pred, nil
 }
 
@@ -43,8 +43,30 @@ type Finder struct {
 }
 
 // NewFinder() creates Finder with working directory specified by dirname.
-func NewFinder(dirname string) Finder {
-	finder := Finder{dirname, make([]Predicate, 0, 10)}
+func NewFinder(dirname string) *Finder {
+	if len(dirname) == 0 {
+		dirname, _ = os.Getwd()
+	}
+	return &Finder{dirname, make([]Predicate, 0, 10)}
+}
+
+func NewFinderWith(param FinderEnv) *Finder {
+	finder := NewFinder(param.DirName)
+	if param.FileOnly {
+		finder.Append(isFile)
+	}
+	if param.DirOnly {
+		finder.Append(isDir)
+	}
+	if !param.IncludesDotFile {
+		finder.Append(isNotDotFile)
+	}
+	if len(param.Keyword) > 0 {
+		pattern, err := PredicateWithPattern(keyword)
+		if err != nil {
+			finder.Append(pattern)
+		}
+	}
 	return finder
 }
 
@@ -55,7 +77,7 @@ func (finder *Finder) Append(p ...Predicate) {
 
 // Find() searches with specified predicates & working directory.
 // It returns the result as []string & error.
-func (finder Finder) Find() ([]string, error) {
+func (finder *Finder) Find() ([]string, error) {
 	fileInfos, err := ioutil.ReadDir(finder.dirname)
 	if err != nil {
 		return nil, err
@@ -70,7 +92,7 @@ func (finder Finder) Find() ([]string, error) {
 }
 
 // MeetsPreds returns wheter specified v meets all Finder.predicates.
-func (finder Finder) MeetsPreds(v os.FileInfo) bool {
+func (finder *Finder) MeetsPreds(v os.FileInfo) bool {
 	if len(finder.predicates) == 0 {
 		return true
 	}
@@ -79,6 +101,16 @@ func (finder Finder) MeetsPreds(v os.FileInfo) bool {
 		result = (result && pred(v))
 	}
 	return result
+}
+
+// FinderEnv represents states & predicates that Finder has.
+// In many cases, it is used for creating a new Finder.
+type FinderEnv struct {
+	DirOnly         bool
+	FileOnly        bool
+	IncludesDotFile bool
+	Keyword         string
+	DirName         string
 }
 
 // distinctName returns FileInfo.Name() appended slash to if "fi" represents directory.
