@@ -90,13 +90,13 @@ func main() {
 		fmt.Println(path.Base(os.Args[0] + " " + "ver." + version))
 		return
 	}
-	printForDebug()
+	printSetting()
 	finder := DefaultFinder()
 	finder.PrintResults()
 }
 
-func printForDebug() {
-	fmt.Println("jfind command debug---")
+func printSetting() {
+	fmt.Println("jfind current setting---")
 	fmt.Println("  ", "Version    :", version)
 	fmt.Println("  ", "Keyword    :", keyword)
 	fmt.Println("  ", "Dirname    :", dirname)
