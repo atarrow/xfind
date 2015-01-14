@@ -96,15 +96,6 @@ func recurse(dirs []string) {
 	}
 }
 
-// FinderEnv represents states & predicates that Finder has.
-// In many cases, it is used for creating a new Finder.
-type FinderEnv struct {
-	IsRecursive bool
-	Keyword     string
-	Dir         string
-	FileType
-}
-
 func format(a []string, pre, pos string) string {
 	if len(a) == 0 {
 		return ""

@@ -8,83 +8,59 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path"
 	"strings"
 )
 
 var (
 	showsVersion bool
-	recursive    bool
-	fileType     FileType
-	keyword      string
-	dirname      string
-	version      string = "0.8.5.h"
+	version      string = "0.8.6.b"
+	sharedEnv    FinderEnv
 )
 
-var sharedEnv FinderEnv
-
-func DefaultEnv() FinderEnv {
-	return FinderEnv{
-		IsRecursive: recursive,
-		Keyword:     keyword,
-		Dir:         dirname,
-		FileType:    fileType,
-	}
+// FinderEnv represents states & predicates that Finder has.
+// In many cases, it is used for creating a new Finder.
+type FinderEnv struct {
+	IsRecursive bool
+	Keyword     string
+	Dir         string
+	FileType
 }
 
-func DefaultPredicates(e FinderEnv) []Predicate {
-	p := make([]Predicate, 0, 4)
-	if e.IsFileOnly() {
-		p = append(p, isFileOnly)
-	}
-	if e.IsDirOnly() {
-		p = append(p, isDirOnly)
-	}
-	if e.OmitsDot() {
-		p = append(p, isNotDotFile)
-	}
-	if len(e.Keyword) > 0 {
-		pattern, err := PredicateWithPattern(keyword)
-		if err == nil {
-			p = append(p, pattern)
-		}
-	}
-	return p
-}
+const help = `
+Usage of xfind:
 
-func DefaultFinder() *Finder {
-	f := NewFinder(sharedEnv)
-	f.predicates = append(f.predicates, DefaultPredicates(sharedEnv)...)
-	return f
-}
+	xfind -k=.zip -p=/absolute/dir/name
 
-const msgFileTYpe = ` specifies file type:
-		[a]  adds invisible files and directories to targets.
-		[d]  adds directories to targets.
-		[f]  adds files to targets.`
+  -v : shows version.
+  -p : specifies path.
+  -r : specifies wheter or not to search in subdirectories.
+  -k : specifies keyword which means a file name.
+  -t : specifies file types.
+      [a]  adds invisible files and directories to targets.
+      [d]  adds directories to targets.
+      [f]  adds files to targets.
+`
 
 func init() {
-	flag.StringVar(&dirname, "p", "", "specifies directory. Default is a current directory.")
-	flag.StringVar(&keyword, "k", "", "specifies keyword. Default represents all entries.")
-	flag.BoolVar(&showsVersion, "v", false, "shows version if specified.")
-	flag.BoolVar(&recursive, "r", false, "tries to search in subdirectories.")
-	flag.Var(&fileType, "t", msgFileTYpe)
+	flag.StringVar(&sharedEnv.Dir, "p", "", "")
+	flag.StringVar(&sharedEnv.Keyword, "k", "", "")
+	flag.BoolVar(&sharedEnv.IsRecursive, "r", false, "")
+	flag.Var(&sharedEnv.FileType, "t", "")
+	flag.BoolVar(&showsVersion, "v", false, "")
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Printf("\n  Exsample: %s -k=.zip -p=/absolute/dir/name -f\n\n", path.Base(os.Args[0]))
-		flag.PrintDefaults()
+		//path := path.Base(os.Args[0])
+		fmt.Println(help)
 	}
-	if len(dirname) == 0 {
-		dirname, _ = os.Getwd()
+	if len(sharedEnv.Dir) == 0 {
+		sharedEnv.Dir, _ = os.Getwd()
 	}
 	flag.Parse()
-	sharedEnv = DefaultEnv()
 }
 
 func main() {
 	if showsVersion {
-		fmt.Println(path.Base(os.Args[0] + " " + "ver." + version))
+		fmt.Println(os.Args[0] + " " + "ver." + version)
 		return
 	}
 	printSetting()
@@ -96,10 +72,10 @@ func main() {
 func printSetting() {
 	fmt.Println("jfind current setting---")
 	fmt.Println("  ", "Version    :", version)
-	fmt.Println("  ", "Keyword    :", keyword)
-	fmt.Println("  ", "Dirname    :", dirname)
-	fmt.Println("  ", "Recusive   :", recursive)
-	fmt.Println(&fileType)
+	fmt.Println("  ", "Keyword    :", sharedEnv.Keyword)
+	fmt.Println("  ", "Dirname    :", sharedEnv.Dir)
+	fmt.Println("  ", "Recusive   :", sharedEnv.IsRecursive)
+	fmt.Println(&(sharedEnv.FileType))
 	fmt.Println()
 }
 
