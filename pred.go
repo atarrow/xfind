@@ -15,8 +15,8 @@ type Predicate func(os.FileInfo) bool
 var (
 	isDotFile    Predicate = func(v os.FileInfo) bool { return strings.HasPrefix(v.Name(), ".") }
 	isNotDotFile Predicate = func(v os.FileInfo) bool { return !isDotFile(v) }
-	isDir        Predicate = func(v os.FileInfo) bool { return v.IsDir() }
-	isFile       Predicate = func(v os.FileInfo) bool { return !v.IsDir() }
+	isDirOnly    Predicate = func(v os.FileInfo) bool { return v.IsDir() }
+	isFileOnly   Predicate = func(v os.FileInfo) bool { return !v.IsDir() }
 )
 
 // PredicateWithPattern creates a new predicate that represents

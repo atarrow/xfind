@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/text/unicode/norm"
 	"io/ioutil"
 	"os"
 )
@@ -100,19 +99,10 @@ func recurse(dirs []string) {
 // FinderEnv represents states & predicates that Finder has.
 // In many cases, it is used for creating a new Finder.
 type FinderEnv struct {
-	IsDirOnly       bool
-	IsFileOnly      bool
-	IncludesDotFile bool
-	IsRecursive     bool
-	Keyword         string
-	Dir             string
-}
-
-// NFDString returns a string converted into Unicode NFD normalized string.
-func NFDString(s string) string {
-	buf := []byte(s)
-	buf = norm.NFD.Bytes(buf)
-	return string(buf)
+	IsRecursive bool
+	Keyword     string
+	Dir         string
+	FileType
 }
 
 func format(a []string, pre, pos string) string {
