@@ -35,7 +35,7 @@ func DefaultEnv() FinderEnv {
 func DefaultPredicates(e FinderEnv) []Predicate {
 	p := make([]Predicate, 0, 4)
 	if e.IsFileOnly() {
-		p = append(p, isFile)
+		p = append(p, isFileOnly)
 	}
 	if e.IsDirOnly() {
 		p = append(p, isDirOnly)
