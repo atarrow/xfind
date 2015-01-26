@@ -1,6 +1,6 @@
 // xfind project path.go
 // Copyright 2015 atarrow. All rights reserved.
-package main
+package search
 
 import (
 	"fmt"
