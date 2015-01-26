@@ -18,6 +18,11 @@ func NFDString(s string) string {
 	return string(buf)
 }
 
+func Getwd() string {
+	wd, _ := os.Getwd()
+	return wd
+}
+
 type Path string
 
 func (p Path) Exists() bool {

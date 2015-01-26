@@ -40,15 +40,14 @@ func main() {
 }
 
 type Command struct {
-	Run       func(args []string) error
-	UsageLine string
-	Short     string
-	Long      string
-	Flag      *flag.FlagSet
+	Run   func(args []string) error
+	Short string
+	Long  string
+	Flag  *flag.FlagSet
 }
 
 func (c *Command) Usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s", c.UsageLine)
+	fmt.Fprintf(os.Stderr, "\nusage: %s", c.Short)
 	fmt.Fprintf(os.Stderr, "%s\n", c.Long)
 	os.Exit(2)
 }
